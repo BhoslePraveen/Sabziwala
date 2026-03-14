@@ -23,16 +23,16 @@ import lombok.extern.slf4j.Slf4j;
  * JWT token utility service.
  *
  * ┌─────────────────────────────────────────────────────────┐
- * │  ACCESS TOKEN  (15 min)                                  │
- * │  ├─ Subject: user email                                  │
- * │  ├─ Claims: userId, role, username                       │
- * │  ├─ Signed with: HMAC-SHA256                             │
- * │  └─ Stored in: Redis (for blacklisting on logout)        │
- * │                                                          │
- * │  REFRESH TOKEN (1 days)                                  │
- * │  ├─ Random UUID string (NOT a JWT)                       │
- * │  ├─ Stored in: PostgreSQL + Redis cache                  │
- * │  └─ Used for: getting new access tokens                  │
+ * │  ACCESS TOKEN  (15 min)                                 │
+ * │  ├─ Subject: user email                                 │
+ * │  ├─ Claims: userId, role, username                      │
+ * │  ├─ Signed with: HMAC-SHA256                            │
+ * │  └─ Stored in: Redis (for blacklisting on logout)       │
+ * │                                                         │
+ * │  REFRESH TOKEN (1 days)                                 │
+ * │  ├─ Random UUID string (NOT a JWT)                      │
+ * │  ├─ Stored in: PostgreSQL + Redis cache                 │
+ * │  └─ Used for: getting new access tokens                 │
  * └─────────────────────────────────────────────────────────┘
  */
 @Service
@@ -51,20 +51,26 @@ public class JwtService {
     
     /**
      * Generate access token with user claims.
+     * JWT Structure:
+     * Header  -> algorithm + token type
+     * Payload -> claims (user data)
+     * Signature -> verifies token integrity
      */
     public String generateAccessToken(UUID userId, String email, String role, String username) {
+    	// Step 1 : Create a map to hold custom claims (extra information stored in JWT payload)
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId.toString());
         claims.put("role", role);
         claims.put("username", username);
 
         return Jwts.builder()
-                .claims(claims)
-                .subject(email)
-                .issuedAt(new Date())
+                .claims(claims)  // Add custom claims to the JWT payload
+                .subject(email)  // Subject typically represents the principal (here we use email)
+                .issuedAt(new Date()) // Set token issue time (when token was generated)
+                 // accessTokenExpirationMs usually configured in application.properties
                 .expiration(new Date(System.currentTimeMillis() + accessTokenExpirationMs))
-                .signWith(signingKey, Jwts.SIG.HS256)
-                .compact();
+                .signWith(signingKey, Jwts.SIG.HS256) // Sign the token using a secret key and algorithm
+                .compact(); // Build the JWT and serialize it into a compact URL-safe string
     }
     
     /**

@@ -27,49 +27,43 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class AuthController {
-	
+
 	private final AuthService authService;
-	
+
 	@PostMapping("/register")
-	public ResponseEntity<ApiResponse<AuthResponse>> register(@RequestBody @Valid RegisterRequest request){
+	public ResponseEntity<ApiResponse<AuthResponse>> register(@RequestBody @Valid RegisterRequest request) {
 		AuthResponse response = authService.register(request);
-		
-		return ResponseEntity
-				.status(HttpStatus.CREATED)
-				.body(ApiResponse.sucess("Registeration is Successful ! Welcome",response));
-		
+
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(ApiResponse.sucess("Registeration is Successful ! Welcome", response));
+
 	}
-	
-	
+
 	@PostMapping("/login")
-	public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request ){
+	public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
 		AuthResponse response = authService.login(request);
-		
-		return ResponseEntity
-				.status(HttpStatus.CREATED)
-				.body(ApiResponse.sucess("Login Successful!",response));
+
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(ApiResponse.sucess("Login Successful!", response));
 	}
-	
+
 	@PostMapping("/refresh")
-	public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request){
+	public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
 		AuthResponse response = authService.refreshToken(request);
-		
-		return ResponseEntity
-				.status(HttpStatus.CREATED)
-				.body(ApiResponse.sucess("Token refreshed successfully",response));
+
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(ApiResponse.sucess("Token refreshed successfully", response));
 	}
-	
-	
+
 	@PostMapping("/logout")
-	public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request, @AuthenticationPrincipal UserDetails userDetails){
+	public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request,
+			@AuthenticationPrincipal UserDetails userDetails) {
 		String authHeader = request.getHeader("Authorization");
 		String accessToken = authHeader.substring(7);
-		
-		authService.logout(accessToken,userDetails.getUsername());
-		
-		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.sucess("Logged Out successfully !"));
+		authService.logout(accessToken, userDetails.getUsername());
+
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ApiResponse.sucess("Logged Out successfully !"));
 	}
-	
-	
 
 }
